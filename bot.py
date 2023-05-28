@@ -17,6 +17,15 @@ sqlite_db = SqlLiteHelper(db_file=config['Settings']['db_name'])
 message_helper = MessageHelper
 
 
+@dp.message_handler(lambda message: message.text == "Чекирование")
+async def start_message(message: types.Message):
+    user_data = sqlite_db.get_auth_data(message.from_user.id)
+    if not user_data:
+        await message.reply(message_helper.MESSAGES['contester_not_exist'])
+        return
+    keyboard = custom_keyboards.get_standart_keyboard_by_role(user_data['role'])
+    await message.reply(message_helper.MESSAGES['contester_exist'], reply_markup=keyboard)
+
 @dp.message_handler(commands=['start'])
 async def start_message(message: types.Message):
     if message.chat.type != 'private':
@@ -28,7 +37,11 @@ async def start_message(message: types.Message):
         keyboard = custom_keyboards.get_roles_choice_keyboard()
         await message.reply(message_helper.MESSAGES['start'].format(user_full_name), reply_markup=keyboard)
     else:
-        await message.reply(message_helper.MESSAGES['contester_exist'])
+        user_data = sqlite_db.get_auth_data(message.from_user.id)
+        await message.reply(
+            message_helper.MESSAGES['contester_exist'],
+            reply_markup=custom_keyboards.get_standart_keyboard_by_role(user_data['role'])
+        )
 
 
 @dp.message_handler(state=States.WRITING_DESCRIPTION)
@@ -44,12 +57,15 @@ async def add_description(message: types.Message):
     )
 
     state = dp.current_state(user=message.from_user.id)
+    user_data = sqlite_db.get_auth_data(message.from_user.id)
 
     await state.reset_state()
-    await message.reply(message_helper.MESSAGES['pryanik_added'], reply=False)
+    await message.reply(message_helper.MESSAGES['pryanik_added'],
+                        reply=False,
+                        reply_markup=custom_keyboards.get_standart_keyboard_by_role(user_data['role']))
 
 
-@dp.message_handler(commands=['pryanik_send'])
+@dp.message_handler(lambda message: message.text == custom_keyboards.command_send_pryanik['title'])
 async def pryanik_send_message(message: types.Message):
     if message.chat.type != 'private':
         await message.reply(message_helper.MESSAGES['go_private'])
@@ -59,7 +75,7 @@ async def pryanik_send_message(message: types.Message):
     await message.reply(message_helper.MESSAGES['choose_receiver'], reply_markup=keyboard)
 
 
-@dp.message_handler(commands=['pizdul_send'])
+@dp.message_handler(lambda message: message.text == custom_keyboards.command_send_pizdyl['title'])
 async def pizdul_send_message(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
@@ -73,7 +89,7 @@ async def pizdul_send_message(message: types.Message):
     await message.reply(message_helper.MESSAGES['choose_receiver'], reply_markup=keyboard)
 
 
-@dp.message_handler(commands=['get_stat_current_month'])
+@dp.message_handler(lambda message: message.text == custom_keyboards.command_get_stat_current_month['title'])
 async def get_stat_message(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
@@ -88,12 +104,12 @@ async def get_stat_message(message: types.Message):
         await message.reply('Нет данных за текущий месяц')
 
 
-@dp.message_handler(commands=['get_stat_previous_month'])
+@dp.message_handler(lambda message: message.text == custom_keyboards.command_get_stat_previous_month['title'])
 async def get_stat_message(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
         return
-    if message.chat.type != 'private' or user_data['role'] != 'big_boss' or user_data['role'] != 1:
+    if message.chat.type != 'private' or user_data['role'] != 'big_boss' or user_data['is_confirmed'] != 1:
         return
     today = datetime.date.today().replace(day=1)
     previous_month = today - datetime.timedelta(days=1)
@@ -104,7 +120,7 @@ async def get_stat_message(message: types.Message):
         await message.reply('Нет данных за прошлый месяц')
 
 
-@dp.message_handler(commands=['show_winner_to_all'])
+@dp.message_handler(lambda message: message.text == custom_keyboards.command_show_winner_to_all['title'])
 async def send_winner_data_to_all(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
@@ -151,7 +167,12 @@ async def approve_role_callback(callback_query: types.CallbackQuery):
     contester_id = callback_data[1]
     if callback_data[0] == 'accept':
         sqlite_db.confirm_contester(contester_id)
-        await bot.send_message(contester_id, message_helper.MESSAGES['success_approve'])
+        user_data = sqlite_db.get_auth_data(contester_id)
+        await bot.send_message(
+            contester_id,
+            message_helper.MESSAGES['success_approve'],
+            reply_markup=custom_keyboards.get_standart_keyboard_by_role(user_data['role'])
+        )
     else:
         await bot.send_message(contester_id, message_helper.MESSAGES['failed_approve'])
     await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
