@@ -1,8 +1,11 @@
 # SupBot
 Система учета пряников. 
 
-# Deploy
-Обновить все пакеты, после чего
+# Deploy на Linux сервер
+* изменить файл .settins.ini на settings.ini и вставить в него соответствующие данные. </br>
+* apt update
+* apt upgrade -y
+* apt install python3
 * pip3 install aiogram
 
 * cd ../../etc/systemd/system
