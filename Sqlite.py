@@ -29,7 +29,7 @@ class SqlLiteHelper:
                 "description"	TEXT NOT NULL,
                 "donor_id"	INTEGER NOT NULL,
                 "reciever_id"	INTEGER NOT NULL,
-                "is_pizdul"	INTEGER NOT NULL DEFAULT 0,
+                "is_pizdyl"	INTEGER NOT NULL DEFAULT 0,
                 "date"	TEXT NOT NULL,
                 FOREIGN KEY("donor_id") REFERENCES "contesters"("id"),
                 FOREIGN KEY("reciever_id") REFERENCES "contesters"("id"),
@@ -50,19 +50,19 @@ class SqlLiteHelper:
         return result != 0
 
     def add_record(self, description: str, donor_id: int, reciever_id: int, date: str, record_type: str):
-        if record_type == 'pizdul':
-            is_pizdul = 1
+        if record_type == 'pizdyl':
+            is_pizdyl = 1
         else:
-            is_pizdul = 0
+            is_pizdyl = 0
         sql = '''
-            INSERT INTO main_store(description,donor_id,reciever_id,date,is_pizdul) VALUES (?,?,?,?,?)
+            INSERT INTO main_store(description,donor_id,reciever_id,date,is_pizdyl) VALUES (?,?,?,?,?)
             '''
-        self.cursor.execute(sql, (description, donor_id, reciever_id, date, is_pizdul))
+        self.cursor.execute(sql, (description, donor_id, reciever_id, date, is_pizdyl))
         self.conn.commit()
 
     def get_pryanik(self, pryanik_id: int):
         sql = f'''
-            SELECT DISTINCT m.description, cr.fullname, cr.username, cd.fullname, cd.username, m.is_pizdul
+            SELECT DISTINCT m.description, cr.fullname, cr.username, cd.fullname, cd.username, m.is_pizdyl
             FROM main_store m
             JOIN contesters cr ON m.reciever_id = cr.id
             JOIN contesters cd ON m.donor_id = cd.id
@@ -74,7 +74,7 @@ class SqlLiteHelper:
             data = data[0]
         return {
             'description': data[0],
-            'is_pizdul': data[5],
+            'is_pizdyl': data[5],
             'receiver': {
                 'fullname': data[1],
                 'username': data[2]
@@ -91,7 +91,7 @@ class SqlLiteHelper:
                         cd.fullname as sender_fullname, 
                         cd.username as sender_username,
                         m.date as date,
-                        m.is_pizdul as pizdul
+                        m.is_pizdyl as pizdyl
                     FROM main_store m
                     JOIN contesters cd ON m.donor_id = cd.id
                     WHERE m.reciever_id = {contester_id}
@@ -137,7 +137,7 @@ class SqlLiteHelper:
 
     def get_stat(self, month: str):
         sql = f'''
-            SELECT c.id, c.fullname, (count(m.id)-sum(m.is_pizdul) * 2) AS count, c.id FROM main_store m
+            SELECT c.id, c.fullname, (count(m.id)-sum(m.is_pizdyl) * 2) AS count, c.id FROM main_store m
             JOIN contesters c ON m.reciever_id = c.id
             WHERE m.date LIKE "%-{month}-%"
             GROUP BY c.fullname

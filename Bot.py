@@ -3,10 +3,10 @@ import configparser
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-import keyboards as custom_keyboards
+import Keyboards as CustomKeyboards
 from MessageHelper import MessageHelper
-from utils import States
-from sqlite import SqlLiteHelper
+from Utils import States
+from Sqlite import SqlLiteHelper
 
 config = configparser.ConfigParser()
 config.read("settings.ini")
@@ -23,8 +23,9 @@ async def start_message(message: types.Message):
     if not user_data:
         await message.reply(message_helper.MESSAGES['contester_not_exist'])
         return
-    keyboard = custom_keyboards.get_standart_keyboard_by_role(user_data['role'])
+    keyboard = CustomKeyboards.get_standart_keyboard_by_role(user_data['role'])
     await message.reply(message_helper.MESSAGES['contester_exist'], reply_markup=keyboard)
+
 
 @dp.message_handler(commands=['start'])
 async def start_message(message: types.Message):
@@ -34,13 +35,13 @@ async def start_message(message: types.Message):
     user_full_name = message.from_user.full_name
 
     if sqlite_db.add_contester(message.from_user.id, user_full_name, message.from_user.username):
-        keyboard = custom_keyboards.get_roles_choice_keyboard()
+        keyboard = CustomKeyboards.get_roles_choice_keyboard()
         await message.reply(message_helper.MESSAGES['start'].format(user_full_name), reply_markup=keyboard)
     else:
         user_data = sqlite_db.get_auth_data(message.from_user.id)
         await message.reply(
             message_helper.MESSAGES['contester_exist'],
-            reply_markup=custom_keyboards.get_standart_keyboard_by_role(user_data['role'])
+            reply_markup=CustomKeyboards.get_standart_keyboard_by_role(user_data['role'])
         )
 
 
@@ -60,23 +61,23 @@ async def add_description(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
 
     await state.reset_state()
-    await message.reply(message_helper.MESSAGES['pryanik_added'],
+    await message.reply(message_helper.MESSAGES['description_added'],
                         reply=False,
-                        reply_markup=custom_keyboards.get_standart_keyboard_by_role(user_data['role']))
+                        reply_markup=CustomKeyboards.get_standart_keyboard_by_role(user_data['role']))
 
 
-@dp.message_handler(lambda message: message.text == custom_keyboards.command_send_pryanik['title'])
+@dp.message_handler(lambda message: message.text == CustomKeyboards.command_send_pryanik['title'])
 async def pryanik_send_message(message: types.Message):
     if message.chat.type != 'private':
         await message.reply(message_helper.MESSAGES['go_private'])
         return
     user_list = sqlite_db.get_all_contesters_except_one(message.from_user.id)
-    keyboard = custom_keyboards.get_choose_contester_keyboard(user_list)
+    keyboard = CustomKeyboards.get_choose_contester_keyboard(user_list)
     await message.reply(message_helper.MESSAGES['choose_receiver'], reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text == custom_keyboards.command_send_pizdyl['title'])
-async def pizdul_send_message(message: types.Message):
+@dp.message_handler(lambda message: message.text == CustomKeyboards.command_send_pizdyl['title'])
+async def pizdyl_send_message(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
         await message.reply(message_helper.MESSAGES['contester_not_exist'])
@@ -85,11 +86,11 @@ async def pizdul_send_message(message: types.Message):
         await message.reply(message_helper.MESSAGES['go_private'])
         return
     user_list = sqlite_db.get_all_contesters_except_one(message.from_user.id)
-    keyboard = custom_keyboards.get_choose_contester_keyboard(user_list, 'pizdul')
+    keyboard = CustomKeyboards.get_choose_contester_keyboard(user_list, 'pizdyl')
     await message.reply(message_helper.MESSAGES['choose_receiver'], reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text == custom_keyboards.command_get_stat_current_month['title'])
+@dp.message_handler(lambda message: message.text == CustomKeyboards.command_get_stat_current_month['title'])
 async def get_stat_message(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
@@ -101,10 +102,10 @@ async def get_stat_message(message: types.Message):
     if data:
         await message.reply(message_helper.get_winners(data))
     else:
-        await message.reply('Нет данных за текущий месяц')
+        await message.reply(message_helper.MESSAGES['no_data_current_month'])
 
 
-@dp.message_handler(lambda message: message.text == custom_keyboards.command_get_stat_previous_month['title'])
+@dp.message_handler(lambda message: message.text == CustomKeyboards.command_get_stat_previous_month['title'])
 async def get_stat_message(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
@@ -117,10 +118,10 @@ async def get_stat_message(message: types.Message):
     if data:
         await message.reply(message_helper.get_winners(data))
     else:
-        await message.reply('Нет данных за прошлый месяц')
+        await message.reply(message_helper.MESSAGES['no_data_previous_month'])
 
 
-@dp.message_handler(lambda message: message.text == custom_keyboards.command_show_winner_to_all['title'])
+@dp.message_handler(lambda message: message.text == CustomKeyboards.command_show_winner_to_all['title'])
 async def send_winner_data_to_all(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
@@ -134,7 +135,7 @@ async def send_winner_data_to_all(message: types.Message):
         winner = data[0]
         winner_pryaniks = sqlite_db.get_all_pryanik_by_contester(winner['contester_id'], previous_month.strftime('%m'))
     else:
-        await message.reply('Нет данных за прошлый месяц')
+        await message.reply(message_helper.MESSAGES['no_data_previous_month'])
         return
 
     await bot.send_message(
@@ -155,7 +156,7 @@ async def role_authorization_callback(callback_query: types.CallbackQuery):
     await bot.send_message(
         config['TelegramData']['owner_chat_id'],
         text=message_helper.MESSAGES['role_approve'].format(sender_id, full_name, username, callback_data),
-        reply_markup=custom_keyboards.get_approve_keyboard(sender_id)
+        reply_markup=CustomKeyboards.get_approve_keyboard(sender_id)
     )
     await bot.send_message(callback_query.from_user.id, message_helper.MESSAGES['role_choose'])
     await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
@@ -171,7 +172,7 @@ async def approve_role_callback(callback_query: types.CallbackQuery):
         await bot.send_message(
             contester_id,
             message_helper.MESSAGES['success_approve'],
-            reply_markup=custom_keyboards.get_standart_keyboard_by_role(user_data['role'])
+            reply_markup=CustomKeyboards.get_standart_keyboard_by_role(user_data['role'])
         )
     else:
         await bot.send_message(contester_id, message_helper.MESSAGES['failed_approve'])
@@ -189,9 +190,9 @@ async def store_button_callback(callback_query: types.CallbackQuery):
     state = dp.current_state(user=callback_query.from_user.id)
 
     await state.set_state(States.all()[0])
-    await bot.send_message(callback_query.from_user.id, message_helper.MESSAGES['throw_pryanik'])
+    await bot.send_message(callback_query.from_user.id, message_helper.MESSAGES[f'throw_{record_type}'])
     await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
-    await bot.send_message(callback_query.from_user.id, message_helper.MESSAGES['write_description'])
+    await bot.send_message(callback_query.from_user.id, message_helper.MESSAGES[f'write_{record_type}_description'])
 
 
 if __name__ == "__main__":

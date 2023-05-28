@@ -8,7 +8,7 @@ command_send_pryanik = {
 }
 command_send_pizdyl = {
     'title': 'Отправить пиздюль',
-    'command': '/pizdul_send',
+    'command': '/pizdyl_send',
 }
 command_get_stat_current_month = {
     'title': 'Показать статистику на текущий месяц',
