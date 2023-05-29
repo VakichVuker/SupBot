@@ -24,7 +24,9 @@ class MessageHelper:
 - Manager - не участвует в получении пряников, но может их выдавать. 
 
 После выбора роли владелец бота подтвердит Ваше участие и по команде /start Вы сможете вызывать контекстное меню с Вашим функционалом. 
-Всё взаимодействие со мной происходит исключительно в личке, в данную группу я самостоятельно буду отправлять все необходимые уведомления.''',
+Всё взаимодействие со мной происходит исключительно в личке, в данную группу я самостоятельно буду отправлять все необходимые уведомления.
+
+Мой код на github - https://github.com/VakichVuker/SupBot''',
     }
 
     @staticmethod
@@ -51,6 +53,6 @@ class MessageHelper:
     def get_pryanik_description(pryanik):
         return f'''
 @{pryanik['donor']['username']}, {pryanik['donor']['fullname']} кинул {'пиздюлем ' if pryanik['is_pizdyl'] else 'пряником '} в @{pryanik['receiver']['username']}, {pryanik['receiver']['fullname']}
-{'Пиздюль ' if pryanik['is_pizdyl'] else 'Пряник '} получен за следующие заслуги:
+{'Пиздюль ' if pryanik['is_pizdyl'] else 'Пряник '} получен за {'уебанство в ' if pryanik['is_pizdyl'] else 'следующие заслуги '}:
 {pryanik['description']}
         '''
