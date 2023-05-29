@@ -19,7 +19,7 @@
 [Service]
 WorkingDirectory=/pathToFolderWithBot
 User=root
-ExecStart=/usr/bin/python3 bot.py
+ExecStart=/usr/bin/python3 Bot.py
 
 [Install]
 WantedBy=multi-user.target
