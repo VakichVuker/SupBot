@@ -31,7 +31,6 @@ async def hello_group_message(message: types.Message):
 
 @dp.message_handler(commands=['start'])
 async def start_message(message: types.Message):
-    print(message.from_user)
     if message.chat.type != 'private':
         await message.reply(message_helper.MESSAGES['go_private'])
         return
@@ -79,13 +78,14 @@ async def pryanik_send_message(message: types.Message):
     await message.reply(message_helper.MESSAGES['choose_receiver'], reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text == CustomKeyboards.command_send_pizdyl['title'])
+@dp.message_handler(lambda message: message.text == CustomKeyboards.command_send_pizdyl['title']
+                    and message.chat.type == 'private')
 async def pizdyl_send_message(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
         await message.reply(message_helper.MESSAGES['contester_not_exist'])
         return
-    if message.chat.type != 'private' or int(user_data['is_confirmed']) != 1 or user_data['role'] != 'big_boss':
+    if int(user_data['is_confirmed']) != 1 or user_data['role'] != 'big_boss':
         await message.reply(message_helper.MESSAGES['go_private'])
         return
     user_list = sqlite_db.get_all_contesters_except_one(message.from_user.id)
@@ -93,12 +93,13 @@ async def pizdyl_send_message(message: types.Message):
     await message.reply(message_helper.MESSAGES['choose_receiver'], reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text == CustomKeyboards.command_get_stat_current_month['title'])
+@dp.message_handler(lambda message: message.text == CustomKeyboards.command_get_stat_current_month['title']
+                    and message.chat.type == 'private')
 async def get_stat_message(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
         return
-    if message.chat.type != 'private' or user_data['role'] != 'big_boss' or user_data['is_confirmed'] != 1:
+    if user_data['role'] != 'big_boss' or user_data['is_confirmed'] != 1:
         return
     current_month = datetime.datetime.now().strftime('%m')
     data = sqlite_db.get_stat(current_month)
@@ -108,12 +109,13 @@ async def get_stat_message(message: types.Message):
         await message.reply(message_helper.MESSAGES['no_data_current_month'])
 
 
-@dp.message_handler(lambda message: message.text == CustomKeyboards.command_get_stat_previous_month['title'])
+@dp.message_handler(lambda message: message.text == CustomKeyboards.command_get_stat_previous_month['title']
+                    and message.chat.type == 'private')
 async def get_stat_message(message: types.Message):
     user_data = sqlite_db.get_auth_data(message.from_user.id)
     if not user_data:
         return
-    if message.chat.type != 'private' or user_data['role'] != 'big_boss' or user_data['is_confirmed'] != 1:
+    if user_data['role'] != 'big_boss' or user_data['is_confirmed'] != 1:
         return
     today = datetime.date.today().replace(day=1)
     previous_month = today - datetime.timedelta(days=1)
@@ -132,7 +134,10 @@ async def send_winner_data_to_all(message: types.Message):
     if message.chat.type != 'private' or user_data['role'] != 'big_boss' or user_data['is_confirmed'] != 1:
         return
     today = datetime.date.today().replace(day=1)
+
     previous_month = today - datetime.timedelta(days=1)
+    # previous_month = datetime.datetime.now()      для тестов, чтобы выбирать за текущий месяц
+
     data = sqlite_db.get_stat(previous_month.strftime('%m'))
     if data:
         winner = data[0]
@@ -195,7 +200,11 @@ async def store_button_callback(callback_query: types.CallbackQuery):
     await state.set_state(States.all()[0])
     await bot.send_message(callback_query.from_user.id, message_helper.MESSAGES[f'throw_{record_type}'])
     await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
-    await bot.send_message(callback_query.from_user.id, message_helper.MESSAGES[f'write_{record_type}_description'])
+    await bot.send_message(
+        callback_query.from_user.id,
+        message_helper.MESSAGES[f'write_{record_type}_description'],
+        reply_markup=types.ReplyKeyboardRemove()
+    )
 
 
 if __name__ == "__main__":

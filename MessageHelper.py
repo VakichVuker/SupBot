@@ -53,6 +53,6 @@ class MessageHelper:
     def get_pryanik_description(pryanik):
         return f'''
 @{pryanik['donor']['username']}, {pryanik['donor']['fullname']} кинул {'пиздюлем ' if pryanik['is_pizdyl'] else 'пряником '} в @{pryanik['receiver']['username']}, {pryanik['receiver']['fullname']}
-{'Пиздюль ' if pryanik['is_pizdyl'] else 'Пряник '} получен за {'уебанство в ' if pryanik['is_pizdyl'] else 'следующие заслуги '}:
+{'Пиздюль ' if pryanik['is_pizdyl'] else 'Пряник '} получен за {'уебанство в' if pryanik['is_pizdyl'] else 'следующие заслуги'}:
 {pryanik['description']}
         '''
