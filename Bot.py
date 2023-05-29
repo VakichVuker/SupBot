@@ -17,18 +17,21 @@ sqlite_db = SqlLiteHelper(db_file=config['Settings']['db_name'])
 message_helper = MessageHelper
 
 
-@dp.message_handler(lambda message: message.text == "Чекирование")
-async def start_message(message: types.Message):
-    user_data = sqlite_db.get_auth_data(message.from_user.id)
-    if not user_data:
-        await message.reply(message_helper.MESSAGES['contester_not_exist'])
-        return
-    keyboard = CustomKeyboards.get_standart_keyboard_by_role(user_data['role'])
-    await message.reply(message_helper.MESSAGES['contester_exist'], reply_markup=keyboard)
+@dp.message_handler(
+    lambda message:
+    message.text == 'say hello'
+    and str(message.from_user.id) == str(config['TelegramData']['owner_chat_id'])
+)
+async def hello_group_message(message: types.Message):
+    await bot.send_message(
+        config['TelegramData']['group_chat_id'],
+        text=message_helper.MESSAGES['hello_message']
+    )
 
 
 @dp.message_handler(commands=['start'])
 async def start_message(message: types.Message):
+    print(message.from_user)
     if message.chat.type != 'private':
         await message.reply(message_helper.MESSAGES['go_private'])
         return
