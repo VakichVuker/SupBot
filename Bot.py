@@ -41,7 +41,6 @@ async def hello_group_message(message: types.Message):
     and str(message.from_user.id) == str(config['TelegramData']['owner_chat_id'])
 )
 async def check_new_message(message: types.Message):
-
     picture_info = picture_storage.get_random_pic()
     file_to_send = InputFile(picture_info['path'])
 
@@ -130,6 +129,34 @@ async def pryanik_send_message(message: types.Message):
     user_list = sqlite_db.get_all_contesters_except_one(message.from_user.id)
     keyboard = CustomKeyboards.get_choose_contester_keyboard(user_list)
     await message.reply(message_helper.MESSAGES['choose_receiver'], reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == CustomKeyboards.command_show_self_contester_stat['title'])
+async def get_contester_stat_message(message: types.Message):
+    user_data = sqlite_db.get_auth_data(message.from_user.id)
+    if message.chat.type != 'private':
+        await message.reply(message_helper.MESSAGES['go_private'])
+        return
+    if user_data['role'] != 'contester':
+        return
+
+    current_month = datetime.datetime.now()
+
+    data_current_month = sqlite_db.get_all_pryanik_by_contester(
+        message.from_user.id,
+        current_month.strftime('%m')
+    )
+
+    if data_current_month:
+        await message.reply(
+            message_helper.get_contester_month_stat(data_current_month),
+            reply_markup=CustomKeyboards.get_standart_keyboard_by_role(user_data['role'])
+        )
+    else:
+        await message.reply(
+            message_helper.MESSAGES['no_pryaniks_current_month'],
+            reply_markup=CustomKeyboards.get_standart_keyboard_by_role(user_data['role'])
+        )
 
 
 @dp.message_handler(lambda message: message.text == CustomKeyboards.command_send_pizdyl['title']

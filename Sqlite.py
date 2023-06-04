@@ -98,7 +98,8 @@ class SqlLiteHelper:
 
     def get_all_pryanik_by_contester(self, contester_id, month):
         sql = f'''
-                    SELECT m.description as description, 
+                    SELECT 
+                        m.description as description, 
                         cd.fullname as sender_fullname, 
                         cd.username as sender_username,
                         m.date as date,

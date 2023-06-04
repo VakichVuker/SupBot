@@ -10,6 +10,10 @@ command_send_pizdyl = {
     'title': 'Отправить пиздюль',
     'command': '/pizdyl_send',
 }
+command_show_self_contester_stat = {
+    'title': 'Мои пряники в этом месяце',
+    'command': '/show_self_contester_stat',
+}
 command_get_stat_current_month = {
     'title': 'Показать статистику на текущий месяц',
     'command': '/get_stat_current_month',
@@ -26,7 +30,10 @@ command_show_winner_to_all = {
 all_roles = {
     'contester': {
         'button_text': 'Участник',
-        'enabled_buttons': (command_send_pryanik,)
+        'enabled_buttons': (
+            command_send_pryanik,
+            command_show_self_contester_stat,
+        )
     },
     'big_boss': {
         'button_text': 'Big Boss',
