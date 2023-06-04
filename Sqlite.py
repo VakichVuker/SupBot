@@ -15,22 +15,23 @@ class SqlLiteHelper:
     def create_base_tables(self):
         self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS "contesters" (
-                "id"	INTEGER NOT NULL UNIQUE,
-                "fullname"	TEXT NOT NULL,
-                "username"	TEXT DEFAULT '',
-                "role"	TEXT NOT NULL DEFAULT 'registration',
-                "is_confirmed"	INTEGER NOT NULL DEFAULT 0,
+                "id"    INTEGER NOT NULL UNIQUE,
+                "fullname"      TEXT NOT NULL,
+                "username"      TEXT DEFAULT '',
+                "role"  TEXT NOT NULL DEFAULT 'registration',
+                "is_confirmed"  INTEGER NOT NULL DEFAULT 0,
                 PRIMARY KEY("id")
                 )
                 ''')
+        print('sqlite3 sqlite_version: ', sqlite3.sqlite_version)
         self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS "main_store" (
-                "id"	INTEGER NOT NULL,
-                "description"	TEXT NOT NULL,
-                "donor_id"	INTEGER NOT NULL,
-                "reciever_id"	INTEGER NOT NULL,
-                "is_pizdyl"	INTEGER NOT NULL DEFAULT 0,
-                "date"	TEXT NOT NULL,
+                "id"    INTEGER NOT NULL,
+                "description"   TEXT NOT NULL,
+                "donor_id"      INTEGER NOT NULL,
+                "reciever_id"   INTEGER NOT NULL,
+                "is_pizdyl"     INTEGER NOT NULL DEFAULT 0,
+                "date"  TEXT NOT NULL,
                 FOREIGN KEY("donor_id") REFERENCES "contesters"("id"),
                 FOREIGN KEY("reciever_id") REFERENCES "contesters"("id"),
                 PRIMARY KEY("id" AUTOINCREMENT)
@@ -62,7 +63,15 @@ class SqlLiteHelper:
 
     def get_pryanik(self, pryanik_id: int):
         sql = f'''
-            SELECT DISTINCT m.description, cr.fullname, cr.username, cd.fullname, cd.username, m.is_pizdyl
+            SELECT DISTINCT 
+                m.description, 
+                cr.fullname, 
+                cr.username, 
+                cd.fullname, 
+                cd.username, 
+                m.is_pizdyl, 
+                cr.id, 
+                cd.id
             FROM main_store m
             JOIN contesters cr ON m.reciever_id = cr.id
             JOIN contesters cd ON m.donor_id = cd.id
@@ -77,11 +86,13 @@ class SqlLiteHelper:
             'is_pizdyl': data[5],
             'receiver': {
                 'fullname': data[1],
-                'username': data[2]
+                'username': data[2],
+                'id': data[6],
             },
             'donor': {
                 'fullname': data[3],
-                'username': data[4]
+                'username': data[4],
+                'id': data[7],
             }
         }
 
@@ -176,11 +187,10 @@ class SqlLiteHelper:
             UPDATE main_store
             SET description = "{text}"
             WHERE donor_id = {contester_id} AND description = "no_data"
-            RETURNING id
-            ORDER BY id DESC
-            LIMIT 1
+            RETURNING *
             '''
         self.cursor.execute(sql)
         result = next(self.cursor)
         self.conn.commit()
         return result[0]
+

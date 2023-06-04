@@ -43,16 +43,23 @@ class MessageHelper:
         pizdyl_count = 0
         for pryanik in pryaniks:
             if not bool(pryanik[4]):
-                text += f"- {pryanik[3]} от @{pryanik[1]} за \"{pryanik[0]}\" \n"
+                text += f"- {pryanik[3]} от {pryanik[1]} за \"{pryanik[0]}\" \n"
             else:
                 pizdyl_count += 1
-                pizdyl_text += f"- {pryanik[3]} от @{pryanik[1]} за \"{pryanik[0]}\" \n"
+                pizdyl_text += f"- {pryanik[3]} от {pryanik[1]} за \"{pryanik[0]}\" \n"
         return text if pizdyl_count == 0 else text + pizdyl_text
 
     @staticmethod
-    def get_pryanik_description(pryanik):
+    def get_pryanik_description_for_group(pryanik):
         return f'''
 @{pryanik['donor']['username']}, {pryanik['donor']['fullname']} кинул {'пиздюлем ' if pryanik['is_pizdyl'] else 'пряником '} в @{pryanik['receiver']['username']}, {pryanik['receiver']['fullname']}
 {'Пиздюль ' if pryanik['is_pizdyl'] else 'Пряник '} получен за {'уебанство в' if pryanik['is_pizdyl'] else 'следующие заслуги'}:
 {pryanik['description']}
         '''
+
+    @staticmethod
+    def get_pryanik_description_for_receiver(pryanik):
+        return f'''
+В вас кинул(-а) пряником @{pryanik['donor']['username']}, {pryanik['donor']['fullname']}. 
+Может тоже хочешь кинуть в кого то пряником? /start 
+'''

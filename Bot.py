@@ -1,19 +1,26 @@
 import datetime as datetime
 import configparser
+import os
+
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import InputFile
 
 import Keyboards as CustomKeyboards
+from PictureStorage import PictureStorage
 from MessageHelper import MessageHelper
 from Utils import States
 from Sqlite import SqlLiteHelper
 
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
+
 config = configparser.ConfigParser()
-config.read("settings.ini")
+config.read(ROOT_PATH + "/settings.ini")
 
 bot = Bot(token=config['Settings']['token'])
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 sqlite_db = SqlLiteHelper(db_file=config['Settings']['db_name'])
+picture_storage = PictureStorage(ROOT_PATH)
 message_helper = MessageHelper
 
 
@@ -27,6 +34,28 @@ async def hello_group_message(message: types.Message):
         config['TelegramData']['group_chat_id'],
         text=message_helper.MESSAGES['hello_message']
     )
+
+@dp.message_handler(
+    lambda message:
+    message.text == 'check new'
+    and str(message.from_user.id) == str(config['TelegramData']['owner_chat_id'])
+)
+async def check_new_message(message: types.Message):
+
+    picture_info = picture_storage.get_random_pic()
+    file_to_send = InputFile(picture_info['path'])
+
+    if picture_info['type'] == picture_storage.TYPE_PHOTO:
+        await bot.send_photo(
+            message.from_user.id,
+            file_to_send
+        )
+    elif picture_info['type'] == picture_storage.TYPE_DOCUMENT:
+        await bot.send_document(
+            message.from_user.id,
+            file_to_send
+        )
+    await bot.send_message(message.from_user.id, text='Вам подарили пряник')
 
 
 @dp.message_handler(commands=['start'])
@@ -53,15 +82,40 @@ async def add_description(message: types.Message):
         await message.reply(message_helper.MESSAGES['go_private'])
         return
     updated_id = sqlite_db.add_description_to_last_record(message.from_user.id, message.text)
-    message_text = message_helper.get_pryanik_description(sqlite_db.get_pryanik(updated_id))
+
+    user_data = sqlite_db.get_auth_data(message.from_user.id)
+    state = dp.current_state(user=message.from_user.id)
+
+    updated_row = sqlite_db.get_pryanik(updated_id)
+    message_text = message_helper.get_pryanik_description_for_group(updated_row)
+
+    # отправка картинки и текста тому, кому подарили пряник
+    if int(updated_row['is_pizdyl']) == 0:
+        picture_info = picture_storage.get_random_pic()
+        file_to_send = InputFile(picture_info['path'])
+        if picture_info['type'] == picture_storage.TYPE_PHOTO:
+            await bot.send_photo(
+                updated_row['receiver']['id'],
+                # message.from_user.id,
+                file_to_send,
+            )
+        elif picture_info['type'] == picture_storage.TYPE_DOCUMENT:
+            await bot.send_document(
+                updated_row['receiver']['id'],
+                # message.from_user.id,
+                file_to_send,
+            )
+        await bot.send_message(
+            updated_row['receiver']['id'],
+            # message.from_user.id,
+            text=message_helper.get_pryanik_description_for_receiver(pryanik=updated_row)
+        )
+
+    #отправка информации в общий чат
     await bot.send_message(
         config['TelegramData']['group_chat_id'],
         text=message_text
     )
-
-    state = dp.current_state(user=message.from_user.id)
-    user_data = sqlite_db.get_auth_data(message.from_user.id)
-
     await state.reset_state()
     await message.reply(message_helper.MESSAGES['description_added'],
                         reply=False,
