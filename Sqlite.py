@@ -96,7 +96,7 @@ class SqlLiteHelper:
             }
         }
 
-    def get_all_pryanik_by_contester(self, contester_id, month):
+    def get_all_pryanik_by_contester(self, contester_id, month: str, year: str):
         sql = f'''
                     SELECT 
                         m.description as description, 
@@ -107,7 +107,7 @@ class SqlLiteHelper:
                     FROM main_store m
                     JOIN contesters cd ON m.donor_id = cd.id
                     WHERE m.reciever_id = {contester_id}
-                    AND m.date LIKE "%-{month}-%"
+                    AND m.date LIKE "{year}-{month}-%"
                 '''
         self.cursor.execute(sql)
         data = self.cursor.fetchall()
@@ -147,11 +147,11 @@ class SqlLiteHelper:
         self.cursor.execute(sql)
         self.conn.commit()
 
-    def get_stat(self, month: str):
+    def get_stat(self, month: str, year: str):
         sql = f'''
             SELECT c.id, c.fullname, (count(m.id)-sum(m.is_pizdyl) * 2) AS count, c.id FROM main_store m
             JOIN contesters c ON m.reciever_id = c.id
-            WHERE m.date LIKE "%-{month}-%"
+            WHERE m.date LIKE "{year}-{month}-%"
             GROUP BY c.fullname
             ORDER BY count DESC
             '''
@@ -195,3 +195,20 @@ class SqlLiteHelper:
         self.conn.commit()
         return result[0]
 
+    def get_sended_pryaniks_in_this_month(self, month: str, year: str, contester_id: str):
+        sql = f'''
+            SELECT 
+                m.description as description, 
+                cd.fullname as receiver_fullname, 
+                cd.username as receiver_username,
+                m.date as date,
+                m.is_pizdyl as pizdyl
+            FROM main_store m
+            JOIN contesters cd ON m.reciever_id = cd.id
+            WHERE m.donor_id = {contester_id}
+            AND m.date LIKE "{year}-{month}-%"
+        '''
+        print(sql)
+        self.cursor.execute(sql)
+        data = self.cursor.fetchall()
+        return data
