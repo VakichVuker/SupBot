@@ -212,32 +212,6 @@ class SqlLiteHelper:
         except Error as e:
             print(e)
 
-    def get_all_users_except_one(self, caller_id: int):
-        try:
-            sql = f'''
-            SELECT id, fullname FROM contesters 
-            WHERE id <> {caller_id}
-            AND is_confirmed = 1
-            '''
-            self.cursor.execute(sql)
-            data = self.cursor.fetchall()
-            return [{'id': row[0], 'fullname': row[1]} for row in data]
-        except Error as e:
-            print(e)
-
-    def get_all_soft_delete_users(self, caller_id: int):
-        try:
-            sql = f'''
-            SELECT id, fullname FROM contesters 
-            WHERE id <> {caller_id}
-            AND is_confirmed = 0
-            '''
-            self.cursor.execute(sql)
-            data = self.cursor.fetchall()
-            return [{'id': row[0], 'fullname': row[1]} for row in data]
-        except Error as e:
-            print(e)
-
     def add_description_to_last_record(self, contester_id, text):
         try:
             sql = f'''
@@ -301,3 +275,29 @@ class SqlLiteHelper:
         except Error as e:
             print(e)
             return False
+
+    def get_all_users_except_one(self, caller_id: int):
+        try:
+            sql = f'''
+            SELECT id, fullname FROM contesters 
+            WHERE id <> {caller_id}
+            AND is_confirmed = 1
+            '''
+            self.cursor.execute(sql)
+            data = self.cursor.fetchall()
+            return [{'id': row[0], 'fullname': row[1]} for row in data]
+        except Error as e:
+            print(e)
+
+    def get_all_soft_delete_users(self, caller_id: int):
+        try:
+            sql = f'''
+            SELECT id, fullname FROM contesters 
+            WHERE id <> {caller_id}
+            AND is_confirmed = 0
+            '''
+            self.cursor.execute(sql)
+            data = self.cursor.fetchall()
+            return [{'id': row[0], 'fullname': row[1]} for row in data]
+        except Error as e:
+            print(e)
