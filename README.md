@@ -10,22 +10,23 @@
 * apt upgrade -y
 * apt install python3
 * apt install python3-pip
-* pip3 install aiogram
+* pip3 install aiogram 2.25.2
 
-* cd ../../etc/systemd/system
-* nano sup_bot.service
+- также могут возникнуть проблемы с пакетом sqlite3, стабильно работает на версии 3.35.0
+
+* cd /etc/systemd/system
+* nano name_bot.service
 
 *  В файл вставьте следующие строки
 ```
+[Unit]
+Description=Pryanichniy bot dlya otdela
+After=network.target
 [Service]
-WorkingDirectory=/pathToFolderWithBot
-User=root
-ExecStart=/usr/bin/python3 Bot.py
-
+ExecStart=/usr/bin/python3 /route/to/Bot.py
 [Install]
 WantedBy=multi-user.target
-EOF
 ```
-*  systemctl enable sup_bot</br>
-*  systemctl start sup_bot</br>
+*  systemctl enable name_bot</br>
+*  systemctl start name_bot</br>
 #### Теперь при запуске сервера будет работать автозапуск скрипта. 
