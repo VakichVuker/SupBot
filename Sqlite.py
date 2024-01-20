@@ -24,7 +24,6 @@ class SqlLiteHelper:
                     PRIMARY KEY("id")
                     )
                     ''')
-            print('sqlite3 sqlite_version: ', sqlite3.sqlite_version)
             self.cursor.execute('''
                     CREATE TABLE IF NOT EXISTS "main_store" (
                     "id"    INTEGER NOT NULL,
@@ -176,7 +175,7 @@ class SqlLiteHelper:
             sql = f'''
                 SELECT c.id, c.fullname, (count(m.id)-sum(m.is_pizdyl) * 2) AS count, c.id FROM main_store m
                 JOIN contesters c ON m.reciever_id = c.id
-                WHERE m.date LIKE "{year}-{month}-%"
+                WHERE m.date LIKE "{year}-{month}-%" AND c.is_confirmed = 1
                 GROUP BY c.fullname
                 ORDER BY count DESC
                 '''
@@ -206,6 +205,32 @@ class SqlLiteHelper:
             WHERE id <> {caller_id}
             AND role = 'contester'
             AND is_confirmed = 1
+            '''
+            self.cursor.execute(sql)
+            data = self.cursor.fetchall()
+            return [{'id': row[0], 'fullname': row[1]} for row in data]
+        except Error as e:
+            print(e)
+
+    def get_all_users_except_one(self, caller_id: int):
+        try:
+            sql = f'''
+            SELECT id, fullname FROM contesters 
+            WHERE id <> {caller_id}
+            AND is_confirmed = 1
+            '''
+            self.cursor.execute(sql)
+            data = self.cursor.fetchall()
+            return [{'id': row[0], 'fullname': row[1]} for row in data]
+        except Error as e:
+            print(e)
+
+    def get_all_soft_delete_users(self, caller_id: int):
+        try:
+            sql = f'''
+            SELECT id, fullname FROM contesters 
+            WHERE id <> {caller_id}
+            AND is_confirmed = 0
             '''
             self.cursor.execute(sql)
             data = self.cursor.fetchall()
@@ -256,8 +281,23 @@ class SqlLiteHelper:
                 WHERE id = {contester_id}
                 '''
             self.cursor.execute(sql)
+            self.conn.commit()
             return True
         except Error as e:
             print(e)
             return False
 
+    def soft_delete_user(self, user_id, action):
+        value = '0' if action == "delete" else '1'
+        try:
+            sql = f'''
+                UPDATE contesters
+                SET is_confirmed = {value}
+                WHERE id = {user_id}
+                '''
+            self.cursor.execute(sql)
+            self.conn.commit()
+            return True
+        except Error as e:
+            print(e)
+            return False
