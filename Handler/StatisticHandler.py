@@ -13,7 +13,7 @@ def initialize_handlers(bot_config: BotConfigEntity):
 
 def check_contester_self_stat(bot_config: BotConfigEntity):
     @bot_config.dp.message_handler(
-        lambda message: message.text == bot_config.keyboard_helper.command_show_self_contester_stat['title']
+        lambda message: message.text == bot_config.keyboard_helper.command_show_self_received_pryaniks['title']
     )
     async def get_contester_stat_message(message: types.Message):
         user_data = bot_config.sqlite_db.get_auth_data(message.from_user.id)

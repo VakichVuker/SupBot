@@ -12,16 +12,16 @@ class KeyboardHelper:
         'title': 'Отправить пиздюль',
         'command': '/pizdyl_send',
     }
-    command_show_self_contester_stat = {
+    command_show_self_received_pryaniks = {
         'title': 'Мои пряники в этом месяце',
         'command': '/show_self_contester_stat',
     }
     command_get_stat_current_month = {
-        'title': 'Статистику за текущий месяц',
+        'title': 'Статистика за текущий месяц',
         'command': '/get_stat_current_month',
     }
     command_get_stat_previous_month = {
-        'title': 'Статистику за предыдущий месяц',
+        'title': 'Статистика за предыдущий месяц',
         'command': '/get_stat_previous_month',
     }
     command_show_winner_to_all = {
@@ -32,9 +32,19 @@ class KeyboardHelper:
         'title': 'Отправленные мною пряники в этом месяце',
         'command': '/show_sended_pryaniks',
     }
+
+    # in develop
     command_delete_contester = {
-        'title': 'Отправленные мною пряники в этом месяце',
+        'title': 'Удалить пользователя из пряничной',
         'command': '/delete_contester',
+    }
+    command_restore_contester = {
+        'title': 'Восстановить пользователя в пряничной',
+        'command': '/restore_contester',
+    }
+    command_contester_change_fullname = {
+        'title': 'Изменить ник, отображаемый остальным в пряничной',
+        'command': '/change_nickname',
     }
 
     all_roles = {
@@ -42,8 +52,9 @@ class KeyboardHelper:
             'button_text': 'Участник',
             'enabled_buttons': (
                 command_send_pryanik,
-                command_show_self_contester_stat,
-                command_show_self_sended_pryaniks
+                command_show_self_received_pryaniks,
+                command_show_self_sended_pryaniks,
+                command_contester_change_fullname
             )
         },
         'big_boss': {
@@ -55,14 +66,17 @@ class KeyboardHelper:
                 command_get_stat_current_month,
                 command_get_stat_previous_month,
                 command_show_self_sended_pryaniks,
-                command_delete_contester
+                command_delete_contester,
+                command_restore_contester,
+                command_contester_change_fullname
             )
         },
         'manager': {
             'button_text': 'Менеджер',
             'enabled_buttons': (
                 command_send_pryanik,
-                command_show_self_sended_pryaniks
+                command_show_self_sended_pryaniks,
+                command_contester_change_fullname
             )
         }
     }
