@@ -1,7 +1,6 @@
-from aiogram.utils.helper import Helper, HelperMode, ListItem
+from aiogram.dispatcher.filters.state import State, StatesGroup
 
 
-class States(Helper):
-    mode = HelperMode.snake_case
-
-    WRITING_DESCRIPTION = ListItem()
+class States(StatesGroup):
+    writing_description = State()
+    change_nickname = State()

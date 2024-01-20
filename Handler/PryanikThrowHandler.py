@@ -24,7 +24,7 @@ def pryanik_choose_receiver_handler(bot_config: BotConfigEntity):
 
 
 def add_pryanik_description(bot_config: BotConfigEntity):
-    @bot_config.dp.message_handler(state=States.WRITING_DESCRIPTION)
+    @bot_config.dp.message_handler(state=States.writing_description)
     async def add_description(message: types.Message):
         if message.chat.type != 'private':
             await message.reply(bot_config.message_helper.MESSAGES['go_private'])
@@ -36,6 +36,8 @@ def add_pryanik_description(bot_config: BotConfigEntity):
 
         updated_row = bot_config.sqlite_db.get_pryanik(updated_id)
         message_text = bot_config.message_helper.get_pryanik_description_for_group(updated_row)
+
+        await state.reset_state()
 
         # отправка картинки и текста тому, кому подарили пряник
         if int(updated_row['is_pizdyl']) == 0:
@@ -64,7 +66,7 @@ def add_pryanik_description(bot_config: BotConfigEntity):
             bot_config.config['TelegramData']['group_chat_id'],
             text=message_text
         )
-        await state.reset_state()
+
         await message.reply(
             bot_config.message_helper.MESSAGES['description_added'],
             reply=False,
@@ -109,12 +111,12 @@ def store_pryanik_handler(bot_config: BotConfigEntity):
             'no_data',
             sender_id,
             receiver_id,
-            datetime.datetime.now().strftime('%Y-%m-%d'), record_type
+            datetime.datetime.now().strftime('%Y-%m-%d'),
+            record_type
         )
         state = bot_config.dp.current_state(user=callback_query.from_user.id)
-
         await state.set_state(
-            States.all()[0]
+            States.writing_description
         )
         await bot_config.bot.send_message(
             callback_query.from_user.id,

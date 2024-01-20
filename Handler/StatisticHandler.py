@@ -24,7 +24,6 @@ def check_contester_self_stat(bot_config: BotConfigEntity):
             return
 
         current_date = datetime.datetime.now()
-        print('IM THERE')
         data_current_month = bot_config.sqlite_db.get_all_pryanik_by_contester(
             contester_id=message.from_user.id,
             month=current_date.strftime('%m'),

@@ -32,6 +32,10 @@ class KeyboardHelper:
         'title': 'Отправленные мною пряники в этом месяце',
         'command': '/show_sended_pryaniks',
     }
+    command_contester_change_fullname = {
+        'title': 'Изменить ник, отображаемый остальным в пряничной',
+        'command': '/change_nickname',
+    }
 
     # in develop
     command_delete_contester = {
@@ -41,10 +45,6 @@ class KeyboardHelper:
     command_restore_contester = {
         'title': 'Восстановить пользователя в пряничной',
         'command': '/restore_contester',
-    }
-    command_contester_change_fullname = {
-        'title': 'Изменить ник, отображаемый остальным в пряничной',
-        'command': '/change_nickname',
     }
 
     all_roles = {
