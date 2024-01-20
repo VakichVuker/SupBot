@@ -82,11 +82,11 @@ class KeyboardHelper:
     }
 
     @staticmethod
-    def get_choose_contester_keyboard(all_contesters, keyboard_type='pryanik'):
+    def get_choose_contester_keyboard(all_contesters, keyboard_type='give', row_type='pryanik'):
         inline_kb_full = InlineKeyboardMarkup(row_width=1)
         for contester in all_contesters:
             new_button = InlineKeyboardButton(contester['fullname'],
-                                              callback_data=f'give_{keyboard_type}:{contester["id"]}')
+                                              callback_data=f'{keyboard_type}_{row_type}:{contester["id"]}')
             inline_kb_full.add(new_button)
         return inline_kb_full
 

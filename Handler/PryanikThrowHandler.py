@@ -92,7 +92,7 @@ def pyzdul_send_handler(bot_config: BotConfigEntity):
             )
             return
         user_list = bot_config.sqlite_db.get_all_contesters_except_one(message.from_user.id)
-        keyboard = bot_config.keyboard_helper.get_choose_contester_keyboard(user_list, 'pizdyl')
+        keyboard = bot_config.keyboard_helper.get_choose_contester_keyboard(user_list, row_type='pizdyl')
         await message.reply(
             bot_config.message_helper.MESSAGES['choose_receiver'],
             reply_markup=keyboard
