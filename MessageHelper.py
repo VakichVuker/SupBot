@@ -16,7 +16,10 @@ class MessageHelper:
 
         'no_data_previous_month': 'Нет данных за прошлый месяц',
         'no_data_current_month': 'Нет данных за текущий месяц месяц',
-        'no_pryaniks_current_month': 'Нет пряников за текущий месяц месяц'
+        'no_pryaniks_current_month': 'Нет пряников за текущий месяц месяц',
+        'write_nickname': 'Напишите свой новый ник (до 20 символов включая форматирование):',
+        'incorrect_input': 'Некорректный ввод, длина ника должна достигать максимум 30 символов, введите ник ещё раз:',
+        'nickname_change_accept': 'Ник успешно изменен, теперь все будут видеть вас как: {}',
     }
 
     def __init__(self, bot_name):

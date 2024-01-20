@@ -247,3 +247,17 @@ class SqlLiteHelper:
             return data
         except Error as e:
             print(e)
+
+    def change_user_fullname(self, contester_id, new_fullname):
+        try:
+            sql = f'''
+                UPDATE contesters
+                SET fullname = "{new_fullname}"
+                WHERE id = {contester_id}
+                '''
+            self.cursor.execute(sql)
+            return True
+        except Error as e:
+            print(e)
+            return False
+
