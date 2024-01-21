@@ -39,6 +39,7 @@ class SqlLiteHelper:
                     ''')
         except Error as e:
             print(e)
+            self.conn.close()
 
     def add_contester(self, id: int, fullname: str, username: str):
         try:
@@ -54,6 +55,7 @@ class SqlLiteHelper:
             return result != 0
         except Error as e:
             print(e)
+            self.conn.close()
 
     def add_record(self, description: str, donor_id: int, reciever_id: int, date: str, record_type: str):
         try:
@@ -68,6 +70,7 @@ class SqlLiteHelper:
             self.conn.commit()
         except Error as e:
             print(e)
+            self.conn.close()
 
     def get_pryanik(self, pryanik_id: int):
         try:
@@ -106,6 +109,7 @@ class SqlLiteHelper:
             }
         except Error as e:
             print(e)
+            self.conn.close()
 
     def get_all_pryanik_by_contester(self, contester_id, month: str, year: str):
         try:
@@ -126,6 +130,7 @@ class SqlLiteHelper:
             return data
         except Error as e:
             print(e)
+            self.conn.close()
 
     def update_role(self, role: str, contester_id):
         try:
@@ -139,6 +144,7 @@ class SqlLiteHelper:
             return
         except Error as e:
             print(e)
+            self.conn.close()
 
     def get_auth_data(self, contester_id):
         try:
@@ -157,6 +163,7 @@ class SqlLiteHelper:
                 return None
         except Error as e:
             print(e)
+            self.conn.close()
 
     def confirm_contester(self, contester_id):
         try:
@@ -169,6 +176,7 @@ class SqlLiteHelper:
             self.conn.commit()
         except Error as e:
             print(e)
+            self.conn.close()
 
     def get_stat(self, month: str, year: str):
         try:
@@ -197,6 +205,7 @@ class SqlLiteHelper:
             return result
         except Error as e:
             print(e)
+            self.conn.close()
 
     def get_all_contesters_except_one(self, caller_id: int):
         try:
@@ -211,12 +220,13 @@ class SqlLiteHelper:
             return [{'id': row[0], 'fullname': row[1]} for row in data]
         except Error as e:
             print(e)
+            self.conn.close()
 
     def add_description_to_last_record(self, contester_id, text):
         try:
             sql = f'''
                 UPDATE main_store
-                SET description = "{text}"
+                SET description = "{str(text).replace('"', ",,")}"
                 WHERE donor_id = {contester_id} AND description = "no_data"
                 RETURNING *
                 '''
@@ -226,6 +236,7 @@ class SqlLiteHelper:
             return result[0]
         except Error as e:
             print(e)
+            self.conn.close()
 
     def get_sended_pryaniks_in_this_month(self, month: str, year: str, contester_id: str):
         try:
@@ -246,6 +257,7 @@ class SqlLiteHelper:
             return data
         except Error as e:
             print(e)
+            self.conn.close()
 
     def change_user_fullname(self, contester_id, new_fullname):
         try:
@@ -259,6 +271,7 @@ class SqlLiteHelper:
             return True
         except Error as e:
             print(e)
+            self.conn.close()
             return False
 
     def soft_delete_user(self, user_id, action):
@@ -274,6 +287,7 @@ class SqlLiteHelper:
             return True
         except Error as e:
             print(e)
+            self.conn.close()
             return False
 
     def get_all_users_except_one(self, caller_id: int):
@@ -288,6 +302,7 @@ class SqlLiteHelper:
             return [{'id': row[0], 'fullname': row[1]} for row in data]
         except Error as e:
             print(e)
+            self.conn.close()
 
     def get_all_soft_delete_users(self, caller_id: int):
         try:
@@ -301,3 +316,37 @@ class SqlLiteHelper:
             return [{'id': row[0], 'fullname': row[1]} for row in data]
         except Error as e:
             print(e)
+            self.conn.close()
+
+    def add_multipryanic(self, description: str, donor_id: int, reciever_id: int, date: str, count: int):
+        try:
+            all_data = [
+                (description + f"-{pryanik_num}", donor_id, reciever_id, date) for pryanik_num in range(1, int(count) + 1)
+            ]
+            sql = 'INSERT INTO main_store(description,donor_id,reciever_id,date,is_pizdyl) VALUES (?,?,?,?,0)'
+            self.cursor.executemany(sql, all_data)
+            self.conn.commit()
+            return True
+        except Error as e:
+            print(e)
+            self.conn.close()
+            return False
+
+    def get_user_data_by_username(self, contester_username):
+        try:
+            sql = f'''
+            SELECT DISTINCT id, fullname FROM contesters
+            WHERE username = '{contester_username}'
+            '''
+            self.cursor.execute(sql)
+            data = self.cursor.fetchall()
+            if data:
+                return {
+                    'id': data[0][0],
+                    'fullname': data[0][1],
+                }
+            else:
+                return None
+        except Error as e:
+            print(e)
+            self.conn.close()

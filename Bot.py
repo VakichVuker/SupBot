@@ -3,7 +3,7 @@ import os
 from aiogram import executor
 
 from ConfigEntities.BotConfig import BotConfigEntity
-from Handler import AdminMessageHandler, StartHandler, StatisticHandler, PryanikThrowHandler, ContesterControlHandler
+from Handler import AdminMessageHandler, StartHandler, StatisticHandler, PryanikThrowHandler, ContesterControlHandler, GroupChatHandler
 
 
 if __name__ == "__main__":
@@ -14,5 +14,6 @@ if __name__ == "__main__":
     PryanikThrowHandler.initialize_handlers(bot_config=bot_config)
     StatisticHandler.initialize_handlers(bot_config=bot_config)
     ContesterControlHandler.initialize_handlers(bot_config=bot_config)
+    GroupChatHandler.initialize_handlers(bot_config=bot_config)
 
     executor.start_polling(bot_config.dp)
