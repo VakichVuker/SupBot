@@ -12,7 +12,7 @@ def pryanik_multiadd_handler(bot_config: BotConfigEntity):
     @bot_config.dp.message_handler(
         filters.Text(startswith='@' + bot_config.message_helper.bot_name)
     )
-    async def send_welcome(message: types.Message):
+    async def multipryanik(message: types.Message):
         user_data = bot_config.sqlite_db.get_auth_data(message.from_user.id)
 
         if not user_data:
