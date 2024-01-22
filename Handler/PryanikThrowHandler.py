@@ -31,8 +31,10 @@ def pryanik_choose_receiver_handler(bot_config: BotConfigEntity):
             return
         if message.from_user.username != user_data['username']:
             bot_config.sqlite_db.update_username_for_existing_user(message.from_user.id, message.from_user.username)
+
         user_list = bot_config.sqlite_db.get_all_contesters_except_one(message.from_user.id)
         keyboard = bot_config.keyboard_helper.get_choose_contester_keyboard(user_list)
+
         await message.reply(bot_config.message_helper.MESSAGES['choose_receiver'], reply_markup=keyboard)
 
 
