@@ -149,15 +149,16 @@ class SqlLiteHelper:
     def get_auth_data(self, contester_id):
         try:
             sql = f'''
-            SELECT DISTINCT role, is_confirmed FROM contesters
+            SELECT DISTINCT username, role, is_confirmed FROM contesters
             WHERE id = {contester_id}
             '''
             self.cursor.execute(sql)
             data = self.cursor.fetchall()
             if data:
                 return {
-                    'role': data[0][0],
-                    'is_confirmed': data[0][1],
+                    'username': data[0][0],
+                    'role': data[0][1],
+                    'is_confirmed': data[0][2],
                 }
             else:
                 return None
@@ -347,6 +348,20 @@ class SqlLiteHelper:
                 }
             else:
                 return None
+        except Error as e:
+            print(e)
+            self.conn.close()
+
+    def update_username_for_existing_user(self,contester_id, username):
+        try:
+            sql = f'''
+                       UPDATE contesters 
+                       SET username = "{username}" 
+                       WHERE id = {contester_id}
+                       '''
+            self.cursor.execute(sql)
+            self.conn.commit()
+            return
         except Error as e:
             print(e)
             self.conn.close()

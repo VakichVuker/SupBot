@@ -10,7 +10,7 @@ def initialize_handlers(bot_config: BotConfigEntity):
 
 def pryanik_multiadd_handler(bot_config: BotConfigEntity):
     @bot_config.dp.message_handler(
-        filters.Text(startswith='@suppryaniktest_bot')
+        filters.Text(startswith='@' + bot_config.message_helper.bot_name)
     )
     async def send_welcome(message: types.Message):
         user_data = bot_config.sqlite_db.get_auth_data(message.from_user.id)
@@ -28,20 +28,20 @@ def pryanik_multiadd_handler(bot_config: BotConfigEntity):
         data = message.text.split(' ')
         count = data[2]
         reason = ' ' .join(data[3:])
-        receiver = str(data[1]).replace('@', '')
+        receiver_username = str(data[1]).replace('@', '')
         try:
             count = int(count)
         except Exception as e:
             await message.reply(
-                bot_config.message_helper.MESSAGES['multipryanik_format']
+                bot_config.message_helper.MESSAGES['multipryanik_format'].format(bot_config.message_helper.bot_name)
             )
             return
 
-        receiver_data = bot_config.sqlite_db.get_user_data_by_username(receiver)
+        receiver_data = bot_config.sqlite_db.get_user_data_by_username(receiver_username)
 
         if receiver_data is None:
             await message.reply(
-                bot_config.message_helper.MESSAGES['receiver_not_exist']
+                bot_config.message_helper.MESSAGES['receiver_not_exist'].format(receiver_username)
             )
             return
 
@@ -59,6 +59,12 @@ def pryanik_multiadd_handler(bot_config: BotConfigEntity):
             count=count
         )
         if is_added:
-            await message.reply('Отправлено @' + receiver + ' ' + str(count) + ' пряников по причине: ' + reason)
+            await message.reply(
+                bot_config.message_helper.MESSAGES['multipryanik_success'].format(
+                    receiver_username,
+                    count,
+                    reason
+                )
+            )
             return
-        await message.reply('Что-то пошло не так, вероятно получатель сменил свой @username, если он хочет получить сразу много пряников пусть прожмет /start у меня в чате')
+        await message.reply(bot_config.message_helper.MESSAGES['multipryanik_wrong'])
