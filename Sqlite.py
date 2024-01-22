@@ -182,7 +182,12 @@ class SqlLiteHelper:
     def get_stat(self, month: str, year: str):
         try:
             sql = f'''
-                SELECT c.id, c.fullname, (count(m.id)-sum(m.is_pizdyl) * 2) AS count, c.id FROM main_store m
+                SELECT 
+                    c.id,
+                    c.fullname,
+                    (count(m.id)-sum(m.is_pizdyl) * 2) AS count,
+                    c.username as username
+                FROM main_store m
                 JOIN contesters c ON m.reciever_id = c.id
                 WHERE m.date LIKE "{year}-{month}-%" AND c.is_confirmed = 1
                 GROUP BY c.fullname
@@ -199,7 +204,8 @@ class SqlLiteHelper:
                         'place': place_num,
                         'contester_id': row[0],
                         'fullname': row[1],
-                        'count': row[2]
+                        'count': row[2],
+                        'username': row[3],
                     }
                 )
                 place_num += 1
