@@ -20,6 +20,9 @@ def start_handler(bot_config: BotConfigEntity):
             await message.reply(bot_config.message_helper.MESSAGES['start'].format(user_full_name), reply_markup=keyboard)
         else:
             user_data = bot_config.sqlite_db.get_auth_data(message.from_user.id)
+            if message.from_user.username != user_data['username']:
+                bot_config.sqlite_db.update_username_for_existing_user(message.from_user.id, message.from_user.username)
+            bot_config.sqlite_db.update_username_for_existing_user(message.from_user.id, message.from_user.username)
             await message.reply(
                 bot_config.message_helper.MESSAGES['contester_exist'],
                 reply_markup=bot_config.keyboard_helper.get_standart_keyboard_by_role(user_data['role'])

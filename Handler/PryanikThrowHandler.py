@@ -18,6 +18,19 @@ def pryanik_choose_receiver_handler(bot_config: BotConfigEntity):
         if message.chat.type != 'private':
             await message.reply(bot_config.message_helper.MESSAGES['go_private'])
             return
+        user_data = bot_config.sqlite_db.get_auth_data(message.from_user.id)
+        if not user_data:
+            await message.reply(
+                bot_config.message_helper.MESSAGES['contester_not_exist']
+            )
+            return
+        if int(user_data['is_confirmed']) != 1 or user_data['role'] != 'big_boss':
+            await message.reply(
+                bot_config.message_helper.MESSAGES['go_private']
+            )
+            return
+        if message.from_user.username != user_data['username']:
+            bot_config.sqlite_db.update_username_for_existing_user(message.from_user.id, message.from_user.username)
         user_list = bot_config.sqlite_db.get_all_contesters_except_one(message.from_user.id)
         keyboard = bot_config.keyboard_helper.get_choose_contester_keyboard(user_list)
         await message.reply(bot_config.message_helper.MESSAGES['choose_receiver'], reply_markup=keyboard)
