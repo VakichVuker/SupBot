@@ -59,10 +59,15 @@ def pryanik_multiadd_handler(bot_config: BotConfigEntity):
             count=count
         )
         if is_added:
+            if count > 0:
+                message_type = 'multipryanik_success'
+            else:
+                message_type = 'multipizdul_success'
+
             await message.reply(
-                bot_config.message_helper.MESSAGES['multipryanik_success'].format(
+               bot_config.message_helper.MESSAGES[message_type].format(
                     receiver_username,
-                    count,
+                    abs(count),
                     reason
                 )
             )

@@ -37,9 +37,14 @@ class SqlLiteHelper:
                     PRIMARY KEY("id" AUTOINCREMENT)
                     )
                     ''')
+            self.cursor.execute(
+                '''
+                ALTER TABLE main_store ADD COLUMN meme_filepath TEXT DEFAULT NULL;
+                '''
+            )
+
         except Error as e:
             print(e)
-            self.conn.close()
 
     def add_contester(self, id: int, fullname: str, username: str):
         try:
@@ -55,7 +60,6 @@ class SqlLiteHelper:
             return result != 0
         except Error as e:
             print(e)
-            self.conn.close()
 
     def add_record(self, description: str, donor_id: int, reciever_id: int, date: str, record_type: str):
         try:
@@ -70,7 +74,6 @@ class SqlLiteHelper:
             self.conn.commit()
         except Error as e:
             print(e)
-            self.conn.close()
 
     def get_pryanik(self, pryanik_id: int):
         try:
@@ -109,7 +112,6 @@ class SqlLiteHelper:
             }
         except Error as e:
             print(e)
-            self.conn.close()
 
     def get_all_pryanik_by_contester(self, contester_id, month: str, year: str):
         try:
@@ -130,7 +132,6 @@ class SqlLiteHelper:
             return data
         except Error as e:
             print(e)
-            self.conn.close()
 
     def update_role(self, role: str, contester_id):
         try:
@@ -144,7 +145,6 @@ class SqlLiteHelper:
             return
         except Error as e:
             print(e)
-            self.conn.close()
 
     def get_auth_data(self, contester_id):
         try:
@@ -164,7 +164,6 @@ class SqlLiteHelper:
                 return None
         except Error as e:
             print(e)
-            self.conn.close()
 
     def confirm_contester(self, contester_id):
         try:
@@ -177,7 +176,6 @@ class SqlLiteHelper:
             self.conn.commit()
         except Error as e:
             print(e)
-            self.conn.close()
 
     def get_stat(self, month: str, year: str):
         try:
@@ -193,6 +191,7 @@ class SqlLiteHelper:
                 GROUP BY c.fullname
                 ORDER BY count DESC
                 '''
+
             self.cursor.execute(sql)
             data = self.cursor.fetchall()
 
@@ -212,7 +211,34 @@ class SqlLiteHelper:
             return result
         except Error as e:
             print(e)
-            self.conn.close()
+
+    def get_user_memes(self, user_id: str, month: str, year: str):
+        try:
+            sql = f'''
+                SELECT 
+                    description as description,
+                    meme_filepath AS meme_filepath
+                FROM main_store
+                WHERE date LIKE "{year}-{month}-%" AND reciever_id = {user_id}
+            '''
+
+            self.cursor.execute(sql)
+            data = self.cursor.fetchall()
+
+            result = list()
+            for row in data:
+                if row[1] is not None:
+                    result.append(
+                        {
+                            'description': row[0],
+                            'meme_filepath': row[1]
+                        }
+                    )
+                else:
+                    continue
+            return result
+        except Error as e:
+            print(e)
 
     def get_all_contesters_except_one(self, caller_id: int):
         try:
@@ -227,13 +253,22 @@ class SqlLiteHelper:
             return [{'id': row[0], 'fullname': row[1]} for row in data]
         except Error as e:
             print(e)
-            self.conn.close()
 
-    def add_description_to_last_record(self, contester_id, text):
+    def add_description_to_last_record(self, contester_id, text, meme_filepath=None):
         try:
+            if meme_filepath is not None:
+                set_condition = f'''
+                    description = "{str(text).replace('"', ",,")}",
+                    meme_filepath = "{str(meme_filepath)}"
+                    '''
+            else:
+                set_condition = f'''
+                    description = "{str(text).replace('"', ",,")}"
+                    '''
+
             sql = f'''
                 UPDATE main_store
-                SET description = "{str(text).replace('"', ",,")}"
+                SET {set_condition}
                 WHERE donor_id = {contester_id} AND description = "no_data"
                 RETURNING *
                 '''
@@ -243,7 +278,6 @@ class SqlLiteHelper:
             return result[0]
         except Error as e:
             print(e)
-            self.conn.close()
 
     def get_sended_pryaniks_in_this_month(self, month: str, year: str, contester_id: str):
         try:
@@ -264,7 +298,6 @@ class SqlLiteHelper:
             return data
         except Error as e:
             print(e)
-            self.conn.close()
 
     def change_user_fullname(self, contester_id, new_fullname):
         try:
@@ -278,7 +311,6 @@ class SqlLiteHelper:
             return True
         except Error as e:
             print(e)
-            self.conn.close()
             return False
 
     def soft_delete_user(self, user_id, action):
@@ -294,7 +326,6 @@ class SqlLiteHelper:
             return True
         except Error as e:
             print(e)
-            self.conn.close()
             return False
 
     def get_all_users_except_one(self, caller_id: int):
@@ -309,7 +340,6 @@ class SqlLiteHelper:
             return [{'id': row[0], 'fullname': row[1]} for row in data]
         except Error as e:
             print(e)
-            self.conn.close()
 
     def get_all_soft_delete_users(self, caller_id: int):
         try:
@@ -323,20 +353,24 @@ class SqlLiteHelper:
             return [{'id': row[0], 'fullname': row[1]} for row in data]
         except Error as e:
             print(e)
-            self.conn.close()
 
     def add_multipryanic(self, description: str, donor_id: int, reciever_id: int, date: str, count: int):
         try:
+            is_pyzdyl = 0
+            count_insert = count
+            if (count_insert < 0):
+                is_pyzdyl = 1
+                count_insert = abs(count)
+
             all_data = [
-                (description + f"-{pryanik_num}", donor_id, reciever_id, date) for pryanik_num in range(1, int(count) + 1)
+                (description + f"-{pryanik_num}", donor_id, reciever_id, date, is_pyzdyl) for pryanik_num in range(1, int(count_insert) + 1)
             ]
-            sql = 'INSERT INTO main_store(description,donor_id,reciever_id,date,is_pizdyl) VALUES (?,?,?,?,0)'
+            sql = 'INSERT INTO main_store(description,donor_id,reciever_id,date,is_pizdyl) VALUES (?,?,?,?,?)'
             self.cursor.executemany(sql, all_data)
             self.conn.commit()
             return True
         except Error as e:
             print(e)
-            self.conn.close()
             return False
 
     def get_user_data_by_username(self, contester_username):
@@ -356,9 +390,8 @@ class SqlLiteHelper:
                 return None
         except Error as e:
             print(e)
-            self.conn.close()
 
-    def update_username_for_existing_user(self,contester_id, username):
+    def update_username_for_existing_user(self, contester_id, username):
         try:
             sql = f'''
                        UPDATE contesters 
@@ -370,4 +403,3 @@ class SqlLiteHelper:
             return
         except Error as e:
             print(e)
-            self.conn.close()
