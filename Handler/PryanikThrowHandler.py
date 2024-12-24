@@ -139,7 +139,7 @@ def pyzdul_send_handler(bot_config: BotConfigEntity):
                 bot_config.message_helper.MESSAGES['contester_not_exist']
             )
             return
-        if int(user_data['is_confirmed']) != 1 or user_data['role'] != 'big_boss':
+        if int(user_data['is_confirmed']) != 1:
             await message.reply(
                 bot_config.message_helper.MESSAGES['go_private']
             )

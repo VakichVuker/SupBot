@@ -245,7 +245,7 @@ class SqlLiteHelper:
             sql = f'''
             SELECT id, fullname FROM contesters 
             WHERE id <> {caller_id}
-            AND role = 'contester'
+            AND (role = 'contester' OR role = 'ultimate_contester')
             AND is_confirmed = 1
             '''
             self.cursor.execute(sql)
