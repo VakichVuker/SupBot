@@ -39,17 +39,42 @@ def pryanik_choose_receiver_handler(bot_config: BotConfigEntity):
 
 
 def add_pryanik_description(bot_config: BotConfigEntity):
-    @bot_config.dp.message_handler(state=States.writing_description)
+    @bot_config.dp.message_handler(state=States.writing_description, content_types=['photo', 'text'])
     async def add_description(message: types.Message):
         if message.chat.type != 'private':
             await message.reply(bot_config.message_helper.MESSAGES['go_private'])
             return
-        updated_id = bot_config.sqlite_db.add_description_to_last_record(message.from_user.id, message.text)
+
+        meme_filepath = None
+
+        if message.photo:  # Если есть фото
+            photo = message.photo[-1]
+            file_info = await bot_config.bot.get_file(photo.file_id)
+            downloaded_file = await bot_config.bot.download_file(file_info.file_path)
+            meme_filepath = bot_config.meme_storage.get_meme_filepath(message.from_user.id)
+            # Сохранение файла локально
+            with open(meme_filepath, "wb") as f:
+                f.write(downloaded_file.read())
+
+            if message.caption is None:
+                input_message_text = 'всё описано мемом 🫶'
+            else:
+                input_message_text = message.caption
+        else:
+            input_message_text = message.text
+
+        updated_id = bot_config.sqlite_db.add_description_to_last_record(
+            message.from_user.id,
+            input_message_text,
+            meme_filepath
+        )
 
         user_data = bot_config.sqlite_db.get_auth_data(message.from_user.id)
         state = bot_config.dp.current_state(user=message.from_user.id)
 
+
         updated_row = bot_config.sqlite_db.get_pryanik(updated_id)
+
         message_text = bot_config.message_helper.get_pryanik_description_for_group(updated_row)
 
         await state.reset_state()
@@ -57,7 +82,12 @@ def add_pryanik_description(bot_config: BotConfigEntity):
         # отправка картинки и текста тому, кому подарили пряник
         if int(updated_row['is_pizdyl']) == 0:
             picture_info = bot_config.picture_storage.get_random_pic()
-            file_to_send = InputFile(picture_info['path'])
+
+            if meme_filepath is None:
+                file_to_send = InputFile(picture_info['path'])
+            else:
+                file_to_send = InputFile(meme_filepath)
+
             if picture_info['type'] == bot_config.picture_storage.TYPE_PHOTO:
                 await bot_config.bot.send_photo(
                     updated_row['receiver']['id'],
@@ -76,11 +106,19 @@ def add_pryanik_description(bot_config: BotConfigEntity):
                 text=bot_config.message_helper.get_pryanik_description_for_receiver(pryanik=updated_row)
             )
 
-        #отправка информации в общий чат
-        await bot_config.bot.send_message(
-            bot_config.config['TelegramData']['group_chat_id'],
-            text=message_text
-        )
+        if meme_filepath is not None:
+            # отправка информации в общий чат
+            await bot_config.bot.send_photo(
+                bot_config.config['TelegramData']['group_chat_id'],
+                photo=InputFile(meme_filepath),
+                caption=message_text
+            )
+        else:
+            # отправка информации в общий чат
+            await bot_config.bot.send_message(
+                bot_config.config['TelegramData']['group_chat_id'],
+                text=message_text
+            )
 
         await message.reply(
             bot_config.message_helper.MESSAGES['description_added'],
@@ -101,7 +139,7 @@ def pyzdul_send_handler(bot_config: BotConfigEntity):
                 bot_config.message_helper.MESSAGES['contester_not_exist']
             )
             return
-        if int(user_data['is_confirmed']) != 1 or user_data['role'] != 'big_boss':
+        if int(user_data['is_confirmed']) != 1:
             await message.reply(
                 bot_config.message_helper.MESSAGES['go_private']
             )

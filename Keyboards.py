@@ -57,6 +57,16 @@ class KeyboardHelper:
                 command_contester_change_fullname
             )
         },
+        'ultimate_contester': {
+            'button_text': 'Участник с привелегиями',
+            'enabled_buttons': (
+                command_send_pryanik,
+                command_send_pizdyl,
+                command_show_self_received_pryaniks,
+                command_show_self_sended_pryaniks,
+                command_contester_change_fullname
+            )
+        },
         'big_boss': {
             'button_text': 'Big Boss',
             'enabled_buttons': (

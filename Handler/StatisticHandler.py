@@ -2,6 +2,7 @@ import time
 import datetime as datetime
 
 from aiogram import types
+from aiogram.types import InputMediaPhoto, InputFile
 from ConfigEntities.BotConfig import BotConfigEntity
 
 
@@ -173,6 +174,48 @@ def show_winners_handler(bot_config: BotConfigEntity):
                     text=bot_config.message_helper.message_with_place(winner, winner_pryaniks),
                     parse_mode=types.ParseMode.HTML
                 )
+
+                memes_filepath = bot_config.sqlite_db.get_user_memes(
+                    winner['contester_id'],
+                    previous_month.strftime('%m'),
+                    previous_month.strftime('%Y')
+                )
+
+                if len(memes_filepath) > 0:
+                    await bot_config.bot.send_message(
+                        bot_config.config['TelegramData']['group_chat_id'],
+                        'А вот весь перечень мемов участника 👀'
+                    )
+                    media = list()
+                    for meme_filepath in memes_filepath:
+                        media.append(
+                            InputMediaPhoto(
+                                media=InputFile(
+                                    meme_filepath['meme_filepath']
+                                ),
+                                caption=meme_filepath['description']
+                            )
+                        )
+
+                        if (len(media) >= 10):
+                            await bot_config.bot.send_media_group(
+                                chat_id=bot_config.config['TelegramData']['group_chat_id'],
+                                media=media
+                            )
+                            media = list()
+
+                    if (len(media) > 0):
+                        await bot_config.bot.send_media_group(
+                            chat_id=bot_config.config['TelegramData']['group_chat_id'],
+                            media=media
+                        )
+                        media = list()
+                else:
+                    await bot_config.bot.send_message(
+                        bot_config.config['TelegramData']['group_chat_id'],
+                        'Никто не слал этому участнику мемов 😢'
+                    )
+
                 time.sleep(0.3)
             ms_text = bot_config.message_helper.get_winners(
                     data,
