@@ -58,7 +58,7 @@ class KeyboardHelper:
             )
         },
         'ultimate_contester': {
-            'button_text': 'Участник с привелегиями',
+            'button_text': 'Участник с привилегиями',
             'enabled_buttons': (
                 command_send_pryanik,
                 command_send_pizdyl,
@@ -85,6 +85,15 @@ class KeyboardHelper:
             'button_text': 'Менеджер',
             'enabled_buttons': (
                 command_send_pryanik,
+                command_show_self_sended_pryaniks,
+                command_contester_change_fullname
+            )
+        },
+        'ultimate_manager': {
+            'button_text': 'Менеджер с привилегиями',
+            'enabled_buttons': (
+                command_send_pryanik,
+                command_send_pizdyl,
                 command_show_self_sended_pryaniks,
                 command_contester_change_fullname
             )

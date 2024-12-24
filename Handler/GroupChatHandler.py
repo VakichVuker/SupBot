@@ -38,18 +38,30 @@ def pryanik_multiadd_handler(bot_config: BotConfigEntity):
             )
             return
 
-        if count < 0 and user_data['role'] != 'big_boss' and user_data['role'] != 'ultimate_contester':
+        if count == 0:
+            await message.reply('Умно, но нет')
+
+        if count < 0 and user_data['role'] != 'big_boss' and user_data['role'] != 'ultimate_contester' and user_data['role'] != 'ultimate_manager':
             await message.reply('Ты не можешь кидать пиздюли')
             return
 
         receiver_data = bot_config.sqlite_db.get_user_data_by_username(receiver_username)
-        receiver_full_data = bot_config.sqlite_db.get_auth_data(receiver_data['id'])
 
-        if receiver_full_data is None:
+        if receiver_data is None:
             await message.reply(
                 bot_config.message_helper.MESSAGES['receiver_not_exist'].format(receiver_username)
             )
             return
+
+        if receiver_data['id'] == message.from_user.id:
+            if count > 0:
+                message_text = 'Держи шире карман'
+            else:
+                message_text = 'Суецыд не выход, падумай'
+            await message.reply(message_text)
+            return
+
+        receiver_full_data = bot_config.sqlite_db.get_auth_data(receiver_data['id'])
 
         if receiver_full_data['role'] != 'contester' and receiver_full_data['role'] != 'ultimate_contester':
             await message.reply('Этому человеку нельзя отправить пряники')
