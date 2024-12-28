@@ -25,7 +25,7 @@ class KeyboardHelper:
         'command': '/get_stat_previous_month',
     }
     command_show_winner_to_all = {
-        'title': 'Отправить в общий чат информацию о победителе за прошлый месяц',
+        'title': 'Отправить в общий чат информацию о победителе за текущий месяц 🎄',
         'command': '/show_winner_to_all',
     }
     command_show_self_sended_pryaniks = {
