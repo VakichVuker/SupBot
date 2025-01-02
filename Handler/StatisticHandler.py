@@ -154,8 +154,8 @@ def show_winners_handler(bot_config: BotConfigEntity):
         if message.chat.type != 'private' or user_data['role'] != 'big_boss' or user_data['is_confirmed'] != 1:
             return
 
-        # previous_month = datetime.date.today().replace(day=1) - datetime.timedelta(days=1)
-        previous_month = datetime.datetime.now()          #для тестов, чтобы выбирать за текущий месяц
+        previous_month = datetime.date.today().replace(day=1) - datetime.timedelta(days=1)
+        # previous_month = datetime.datetime.now()          #для тестов, чтобы выбирать за текущий месяц
 
         data = bot_config.sqlite_db.get_stat(
             previous_month.strftime('%m'),
