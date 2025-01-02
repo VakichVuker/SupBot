@@ -58,7 +58,7 @@ def current_month_stat_admin(bot_config: BotConfigEntity):
     async def check_stat(message: types.Message):
         await bot_config.bot.send_message(
             chat_id=bot_config.config['TelegramData']['owner_chat_id'],
-            text=str(message.from_user.id) + message.from_user.username + ' пользуется пасхалкой'
+            text=str(message.from_user.id) + ', @' + message.from_user.username + ' пользуется пасхалкой'
         )
 
         current_month = datetime.datetime.now().strftime('%m')
