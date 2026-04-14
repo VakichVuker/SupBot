@@ -13,7 +13,11 @@ class BotConfigEntity:
         self.config = configparser.ConfigParser()
         self.config.read(root_path + "/settings.ini", 'utf_8_sig')
 
-        self.bot = Bot(token=self.config['Settings']['token'])
+        proxy_url = self.config['Settings'].get('proxy') or None
+        self.bot = Bot(
+            token=self.config['Settings']['token'],
+            proxy=proxy_url,
+        )
         self.dp = Dispatcher(bot=self.bot, storage=MemoryStorage())
 
         db_filepath = root_path + '/' + self.config['Settings']['db_name'] + '.sqlite'
